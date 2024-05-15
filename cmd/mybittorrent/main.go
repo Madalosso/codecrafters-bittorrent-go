@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"unicode"
-	// bencode "github.com/jackpal/bencode-go" // Available if you need it!
+
+	bencode "github.com/jackpal/bencode-go"
 )
 
 // Example:
@@ -46,8 +48,8 @@ func main() {
 
 	if command == "decode" {
 		bencodedValue := os.Args[2]
-
-		decoded, err := decodeBencode(bencodedValue)
+		decoded, err := bencode.Decode(strings.NewReader(bencodedValue))
+		// decoded, err := decodeBencode(bencodedValue)
 		if err != nil {
 			fmt.Println(err)
 			return
