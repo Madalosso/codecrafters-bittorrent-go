@@ -4,6 +4,7 @@ import (
 	// Uncomment this line to pass the first stage
 	// "encoding/json"
 	"bytes"
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -41,14 +42,59 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 type TorrentMetaInfo struct {
 	Length int `bencode:"length"`
 	Name string `benconde:"name"`
-	// PieceLength int `bencode:"piece length"`
-	// Pieces string `bencode:"pieces"`
+	PieceLength int `bencode:"piece length"`
+	Pieces string `bencode:"pieces"`
 }
 
 type TorrentMeta struct {
 	Announce string `bencode:"announce"`
 	Info TorrentMetaInfo `bencode:"info"`
 }
+
+type Torrent struct {
+	Announce string
+	Name string
+	Length int
+	InfoHash [20]byte
+	PieceLength int
+	PieceHashes [][20]byte
+}
+
+func (tr *TorrentMeta) toTorrent() Torrent {
+	infoHash := tr.Info.hash()
+	pieceHashes := tr.Info.pieceHashes()
+
+	return Torrent {
+		Announce: tr.Announce,
+		Name: tr.Info.Name,
+		Length: tr.Info.Length,
+		InfoHash: infoHash,
+		PieceHashes: pieceHashes,
+		PieceLength: tr.Info.PieceLength,
+	}
+}
+
+func (meta *TorrentMetaInfo) hash() [20]byte {
+	var buf bytes.Buffer
+	bencode.Marshal(&buf, *meta)
+	h := sha1.Sum(buf.Bytes())
+	return h
+}
+
+func (meta *TorrentMetaInfo) pieceHashes() [][20]byte {
+	hashLen :=20
+	buf := []byte(meta.Pieces)
+
+	numHashes := len(buf) / hashLen
+	hashes:= make([][20]byte, numHashes)
+
+	for i:=0;i<numHashes;i++{
+		copy(hashes[i][:], buf[i*hashLen:(i+1)*hashLen])
+	}
+	return hashes
+}
+
+
 
 func main() {
 
@@ -82,8 +128,11 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Printf("Tracker URL: %s", meta.Announce)
-		fmt.Printf("Length: %v", meta.Info.Length)
+		torrent:= meta.toTorrent()
+
+		fmt.Printf("Tracker URL: %s", torrent.Announce)
+		fmt.Printf("Length: %v", torrent.Length)
+		fmt.Printf("Info Hash: %v", torrent.InfoHash)
 
 	default:
 		fmt.Println("Unknown command: " + command)
