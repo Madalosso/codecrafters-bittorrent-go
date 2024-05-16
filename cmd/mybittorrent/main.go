@@ -128,12 +128,12 @@ func main() {
 			fmt.Println("Error decoding file content:", err)
 			os.Exit(1)
 		}
-
+		fmt.Println(meta.Info.Length)
 		torrent:= meta.toTorrent()
 
-		fmt.Printf("Tracker URL: %s", torrent.Announce)
-		fmt.Printf("Length: %v", torrent.Length)
-		fmt.Printf("Info Hash: %s", hex.EncodeToString(torrent.InfoHash[:]))
+		fmt.Printf("Tracker URL: %s\n", torrent.Announce)
+		fmt.Printf("Length: %v\n", torrent.Length)
+		fmt.Printf("Info Hash: %s\n", hex.EncodeToString(torrent.InfoHash[:]))
 
 	default:
 		fmt.Println("Unknown command: " + command)
