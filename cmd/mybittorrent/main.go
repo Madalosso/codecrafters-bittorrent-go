@@ -5,6 +5,7 @@ import (
 	// "encoding/json"
 	"bytes"
 	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -132,7 +133,7 @@ func main() {
 
 		// fmt.Printf("Tracker URL: %s", torrent.Announce)
 		// fmt.Printf("Length: %v", torrent.Length)
-		fmt.Printf("Info Hash: %s", torrent.InfoHash)
+		fmt.Printf("Info Hash: %s", hex.EncodeToString(torrent.InfoHash[:]))
 
 	default:
 		fmt.Println("Unknown command: " + command)
