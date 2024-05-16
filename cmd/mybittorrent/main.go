@@ -76,7 +76,6 @@ func (tr *TorrentMeta) toTorrent() Torrent {
 }
 
 func (meta *TorrentMetaInfo) hash() [20]byte {
-	fmt.Println(meta)
 	var buf bytes.Buffer
 	bencode.Marshal(&buf, *meta)
 	h := sha1.Sum(buf.Bytes())
@@ -132,8 +131,8 @@ func main() {
 
 		torrent:= meta.toTorrent()
 
-		// fmt.Printf("Tracker URL: %s", torrent.Announce)
-		// fmt.Printf("Length: %v", torrent.Length)
+		fmt.Printf("Tracker URL: %s", torrent.Announce)
+		fmt.Printf("Length: %v", torrent.Length)
 		fmt.Printf("Info Hash: %s", hex.EncodeToString(torrent.InfoHash[:]))
 
 	default:
