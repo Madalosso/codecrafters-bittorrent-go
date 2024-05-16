@@ -76,6 +76,7 @@ func (tr *TorrentMeta) toTorrent() Torrent {
 }
 
 func (meta *TorrentMetaInfo) hash() [20]byte {
+	fmt.Println(meta)
 	var buf bytes.Buffer
 	bencode.Marshal(&buf, *meta)
 	h := sha1.Sum(buf.Bytes())
