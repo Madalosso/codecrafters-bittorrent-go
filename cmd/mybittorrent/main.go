@@ -83,7 +83,7 @@ func main() {
 		}
 
 		fmt.Printf("Tracker URL: %s", meta.Announce)
-		// fmt.Println("Length: ", meta.Info.Length)
+		fmt.Printf("Length: %v", meta.Info.Length)
 
 	default:
 		fmt.Println("Unknown command: " + command)
