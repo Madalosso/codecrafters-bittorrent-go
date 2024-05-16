@@ -82,7 +82,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Println("Tracker URL: ", meta.Announce)
+		fmt.Printf("Tracker URL: %s", meta.Announce)
 		// fmt.Println("Length: ", meta.Info.Length)
 
 	default:
