@@ -3,6 +3,7 @@ package main
 import (
 	// Uncomment this line to pass the first stage
 	// "encoding/json"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -13,9 +14,6 @@ import (
 	bencode "github.com/jackpal/bencode-go"
 )
 
-// Example:
-// - 5:hello -> hello
-// - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
 	if unicode.IsDigit(rune(bencodedString[0])) {
 		var firstColonIndex int
@@ -40,13 +38,24 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 	}
 }
 
+type TorrentMetaInfo struct {
+	Length int `bencode:"length"`
+	Name string `benconde:"name"`
+	// PieceLength int `bencode:"piece length"`
+	// Pieces string `bencode:"pieces"`
+}
+
+type TorrentMeta struct {
+	Announce string `bencode:"announce"`
+	Info TorrentMetaInfo `bencode:"info"`
+}
+
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	// fmt.Println("Logs from your program will appear here!")
 
 	command := os.Args[1]
 
-	if command == "decode" {
+	switch command {
+	case "decode":
 		bencodedValue := os.Args[2]
 		decoded, err := bencode.Decode(strings.NewReader(bencodedValue))
 		// decoded, err := decodeBencode(bencodedValue)
@@ -57,8 +66,28 @@ func main() {
 
 		jsonOutput, _ := json.Marshal(decoded)
 		fmt.Println(string(jsonOutput))
-	} else {
+
+	case "info":
+		filename := os.Args[2]
+		content, err := os.ReadFile(filename)
+		if err != nil {
+			fmt.Println("Error reading file content:", err)
+			os.Exit(1)
+		}
+		reader := bytes.NewReader(content)
+		var meta TorrentMeta
+		err = bencode.Unmarshal(reader, &meta)
+		if err != nil {
+			fmt.Println("Error decoding file content:", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Tracker URL: ", meta.Announce)
+		fmt.Println("Length: ", meta.Info.Length)
+
+	default:
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
 	}
+
 }
