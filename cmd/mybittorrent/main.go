@@ -130,9 +130,9 @@ func main() {
 
 		torrent:= meta.toTorrent()
 
-		fmt.Printf("Tracker URL: %s", torrent.Announce)
-		fmt.Printf("Length: %v", torrent.Length)
-		fmt.Printf("Info Hash: %v", torrent.InfoHash)
+		// fmt.Printf("Tracker URL: %s", torrent.Announce)
+		// fmt.Printf("Length: %v", torrent.Length)
+		fmt.Printf("Info Hash: %s", torrent.InfoHash)
 
 	default:
 		fmt.Println("Unknown command: " + command)
