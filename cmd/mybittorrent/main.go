@@ -9,47 +9,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
-	"unicode"
 
 	bencode "github.com/jackpal/bencode-go"
 )
 
-func decodeBencode(bencodedString string) (interface{}, error) {
-	if unicode.IsDigit(rune(bencodedString[0])) {
-		var firstColonIndex int
-
-		for i := 0; i < len(bencodedString); i++ {
-			if bencodedString[i] == ':' {
-				firstColonIndex = i
-				break
-			}
-		}
-
-		lengthStr := bencodedString[:firstColonIndex]
-
-		length, err := strconv.Atoi(lengthStr)
-		if err != nil {
-			return "", err
-		}
-
-		return bencodedString[firstColonIndex+1 : firstColonIndex+1+length], nil
-	} else {
-		return "", fmt.Errorf("Only strings are supported at the moment")
-	}
-}
 
 type TorrentMetaInfo struct {
-	Length int `bencode:"length"`
-	Name string `benconde:"name"`
-	PieceLength int `bencode:"piece length"`
-	Pieces string `bencode:"pieces"`
+	Length      int    `bencode:"length"`
+	Name        string `bencode:"name"`
+	PieceLength int    `bencode:"piece length"`
+	Pieces      string `bencode:"pieces"`
 }
-
-type TorrentMeta struct {
-	Announce string `bencode:"announce"`
-	Info TorrentMetaInfo `bencode:"info"`
+type TorrentFile struct {
+	Announce  string      `bencode:"announce"`
+	CreatedBy string      `bencode:"created by"`
+	Info      TorrentMetaInfo `bencode:"info"`
 }
 
 type Torrent struct {
@@ -61,7 +36,7 @@ type Torrent struct {
 	PieceHashes [][20]byte
 }
 
-func (tr *TorrentMeta) toTorrent() Torrent {
+func (tr *TorrentFile) toTorrent() Torrent {
 	infoHash := tr.Info.hash()
 	pieceHashes := tr.Info.pieceHashes()
 
@@ -76,10 +51,15 @@ func (tr *TorrentMeta) toTorrent() Torrent {
 }
 
 func (meta *TorrentMetaInfo) hash() [20]byte {
-	var buf bytes.Buffer
-	bencode.Marshal(&buf, *meta)
-	h := sha1.Sum(buf.Bytes())
-	return h
+	fmt.Println(meta.Pieces)
+	sha := sha1.New()
+	bencode.Marshal(sha, *meta)
+	h := sha.Sum(nil)
+	// fmt.Println(h)
+	var asd [20]byte
+	copy(asd[:], h[:20])
+	// fmt.Println(asd)
+	return asd
 }
 
 func (meta *TorrentMetaInfo) pieceHashes() [][20]byte {
@@ -105,7 +85,6 @@ func main() {
 	case "decode":
 		bencodedValue := os.Args[2]
 		decoded, err := bencode.Decode(strings.NewReader(bencodedValue))
-		// decoded, err := decodeBencode(bencodedValue)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -122,14 +101,12 @@ func main() {
 			os.Exit(1)
 		}
 		reader := bytes.NewReader(content)
-		var meta TorrentMeta
+		var meta TorrentFile
 		err = bencode.Unmarshal(reader, &meta)
 		if err != nil {
 			fmt.Println("Error decoding file content:", err)
 			os.Exit(1)
 		}
-		fmt.Println(meta.Info.hash())
-		fmt.Println(meta.Info.Length)
 		torrent:= meta.toTorrent()
 
 		fmt.Printf("Tracker URL: %s\n", torrent.Announce)
