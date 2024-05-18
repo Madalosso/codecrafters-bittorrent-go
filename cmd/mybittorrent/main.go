@@ -128,6 +128,7 @@ func main() {
 			fmt.Println("Error decoding file content:", err)
 			os.Exit(1)
 		}
+		fmt.Println(meta.Info.hash())
 		fmt.Println(meta.Info.Length)
 		torrent:= meta.toTorrent()
 
