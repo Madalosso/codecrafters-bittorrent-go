@@ -161,10 +161,9 @@ func main() {
 		var resp TrackerResponse
 		bencode.Unmarshal(strings.NewReader(string(responseData)), &resp)
 		peersBytes := []byte(resp.Peers)
-		for i := 0 ; i+6<len(peersBytes); i += 6 {
-			peer := peersBytes[i:i+6]
-			ip:= net.IP(peer[i:i+4])
-			port := binary.BigEndian.Uint16(peer[i+4:i+6])
+		for i := 0 ; i<len(peersBytes); i += 6 {
+			ip:= net.IP(peersBytes[i:i+4])
+			port := binary.BigEndian.Uint16(peersBytes[i+4:i+6])
 			fmt.Printf("%s:%d\n", ip, port)
 		}
 
