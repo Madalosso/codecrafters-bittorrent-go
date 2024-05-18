@@ -14,7 +14,6 @@ import (
 	bencode "github.com/jackpal/bencode-go"
 )
 
-
 type TorrentMetaInfo struct {
 	Length      int    `bencode:"length"`
 	Name        string `bencode:"name"`
@@ -22,16 +21,16 @@ type TorrentMetaInfo struct {
 	Pieces      string `bencode:"pieces"`
 }
 type TorrentFile struct {
-	Announce  string      `bencode:"announce"`
-	CreatedBy string      `bencode:"created by"`
+	Announce  string          `bencode:"announce"`
+	CreatedBy string          `bencode:"created by"`
 	Info      TorrentMetaInfo `bencode:"info"`
 }
 
 type Torrent struct {
-	Announce string
-	Name string
-	Length int
-	InfoHash [20]byte
+	Announce    string
+	Name        string
+	Length      int
+	InfoHash    [20]byte
 	PieceLength int
 	PieceHashes [][20]byte
 }
@@ -40,18 +39,17 @@ func (tr *TorrentFile) toTorrent() Torrent {
 	infoHash := tr.Info.hash()
 	pieceHashes := tr.Info.pieceHashes()
 
-	return Torrent {
-		Announce: tr.Announce,
-		Name: tr.Info.Name,
-		Length: tr.Info.Length,
-		InfoHash: infoHash,
+	return Torrent{
+		Announce:    tr.Announce,
+		Name:        tr.Info.Name,
+		Length:      tr.Info.Length,
+		InfoHash:    infoHash,
 		PieceHashes: pieceHashes,
 		PieceLength: tr.Info.PieceLength,
 	}
 }
 
 func (meta *TorrentMetaInfo) hash() [20]byte {
-	fmt.Println(meta.Pieces)
 	sha := sha1.New()
 	bencode.Marshal(sha, *meta)
 	h := sha.Sum(nil)
@@ -63,19 +61,17 @@ func (meta *TorrentMetaInfo) hash() [20]byte {
 }
 
 func (meta *TorrentMetaInfo) pieceHashes() [][20]byte {
-	hashLen :=20
+	hashLen := 20
 	buf := []byte(meta.Pieces)
 
 	numHashes := len(buf) / hashLen
-	hashes:= make([][20]byte, numHashes)
+	hashes := make([][20]byte, numHashes)
 
-	for i:=0;i<numHashes;i++{
+	for i := 0; i < numHashes; i++ {
 		copy(hashes[i][:], buf[i*hashLen:(i+1)*hashLen])
 	}
 	return hashes
 }
-
-
 
 func main() {
 
@@ -107,11 +103,16 @@ func main() {
 			fmt.Println("Error decoding file content:", err)
 			os.Exit(1)
 		}
-		torrent:= meta.toTorrent()
+		torrent := meta.toTorrent()
 
 		fmt.Printf("Tracker URL: %s\n", torrent.Announce)
 		fmt.Printf("Length: %v\n", torrent.Length)
 		fmt.Printf("Info Hash: %s\n", hex.EncodeToString(torrent.InfoHash[:]))
+		fmt.Printf("Piece Length: %d\n", torrent.PieceLength)
+		for i:=0; i< len(torrent.PieceHashes); i++{
+			fmt.Printf("%s\n", hex.EncodeToString(torrent.PieceHashes[i][:]))
+
+		}
 
 	default:
 		fmt.Println("Unknown command: " + command)
