@@ -5,10 +5,15 @@ import (
 	// "encoding/json"
 	"bytes"
 	"crypto/sha1"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	bencode "github.com/jackpal/bencode-go"
@@ -73,6 +78,30 @@ func (meta *TorrentMetaInfo) pieceHashes() [][20]byte {
 	return hashes
 }
 
+type TrackerResponse struct {
+	// Interval string `bencode:"interval"`
+	// Complete string `bencode:"complete"`
+	// Incomplete string `bencode:"incomplete"`
+	Peers string `bencode:"peers"`
+}
+
+func buildTorrent(filename string) (Torrent, error) {
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Error reading file content:", err)
+		os.Exit(1)
+	}
+	reader := bytes.NewReader(content)
+	var meta TorrentFile
+	err = bencode.Unmarshal(reader, &meta)
+	if err != nil {
+		fmt.Println("Error decoding file content:", err)
+		os.Exit(1)
+	}
+	torrent := meta.toTorrent()
+	return torrent, nil
+}
+
 func main() {
 
 	command := os.Args[1]
@@ -91,19 +120,9 @@ func main() {
 
 	case "info":
 		filename := os.Args[2]
-		content, err := os.ReadFile(filename)
-		if err != nil {
-			fmt.Println("Error reading file content:", err)
-			os.Exit(1)
-		}
-		reader := bytes.NewReader(content)
-		var meta TorrentFile
-		err = bencode.Unmarshal(reader, &meta)
-		if err != nil {
-			fmt.Println("Error decoding file content:", err)
-			os.Exit(1)
-		}
-		torrent := meta.toTorrent()
+
+		torrent, _ := buildTorrent(filename)
+		// handle error
 
 		fmt.Printf("Tracker URL: %s\n", torrent.Announce)
 		fmt.Printf("Length: %v\n", torrent.Length)
@@ -113,6 +132,42 @@ func main() {
 			fmt.Printf("%s\n", hex.EncodeToString(torrent.PieceHashes[i][:]))
 
 		}
+	case "peers":
+		filename := os.Args[2]
+		torrent, _ := buildTorrent(filename)
+
+		req, _ := http.NewRequest("GET", torrent.Announce, nil)
+
+		q := req.URL.Query()
+		q.Add("info_hash", string(torrent.InfoHash[:]))
+		q.Add("peer_id", "06225127954136140002")
+		q.Add("port", "6881")
+		q.Add("uploaded", "0")
+		q.Add("downloaded", "0")
+		q.Add("left", strconv.Itoa(torrent.Length))
+		q.Add("compact", "1")
+		req.URL.RawQuery = q.Encode()
+
+		// fmt.Println("url: ", req.URL.String())
+		response, err := http.Get(req.URL.String())
+		if err != nil {
+			fmt.Println("Error processing the get request")
+			os.Exit(1)
+		}
+
+		responseData , _ := io.ReadAll(response.Body)
+
+		// decoded, _ :=bencode.Decode(strings.NewReader(string(responseData)))
+		var resp TrackerResponse
+		bencode.Unmarshal(strings.NewReader(string(responseData)), &resp)
+		peersBytes := []byte(resp.Peers)
+		for i := 0 ; i+6<len(peersBytes); i += 6 {
+			peer := peersBytes[i:i+6]
+			ip:= net.IP(peer[i:i+4])
+			port := binary.BigEndian.Uint16(peer[i+4:i+6])
+			fmt.Printf("%s:%d\n", ip, port)
+		}
+
 
 	default:
 		fmt.Println("Unknown command: " + command)
