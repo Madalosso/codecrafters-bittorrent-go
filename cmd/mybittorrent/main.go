@@ -123,7 +123,7 @@ func main() {
 				data := msg.data[8:]
 				// fmt.Println("Data: ", data)
 				pieceData = append(pieceData, data...)
-				fmt.Println("Length of downloaded piece data so far: ", len(pieceData))
+				fmt.Println("Length of downloaded piece data so far: ", len(pieceData), "/", torrent.PieceLength)
 
 			}
 			// fmt.Println("Total length of downloaded piece data: ", len(pieceData))
