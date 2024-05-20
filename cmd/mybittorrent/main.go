@@ -77,7 +77,7 @@ func main() {
 
 		fmt.Println(fileDestination, torrentFile, piece)
 		for _, peer := range peers {
-			fmt.Println("Trying to download piece ", piece, "from peer ", peer)
+			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
 			defer peerConnection.conn.Close()
 
@@ -104,7 +104,7 @@ func main() {
 				if i+requestLength <= torrent.PieceLength {
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(requestLength))
 				} else {
-					// fmt.Printf("Last piece, length: %v - %v : %v", torrent.PieceLength, i, torrent.PieceLength-i)
+					fmt.Printf("Last piece, length: %v - %v : %v", torrent.PieceLength, i, torrent.PieceLength-i)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(torrent.PieceLength-i))
 				}
 
@@ -119,11 +119,11 @@ func main() {
 				begin := make([]byte, 4)
 				copy(index, msg.data[0:4])
 				copy(begin, msg.data[4:8])
-				// fmt.Printf("index: %d; begin: %d\n", binary.BigEndian.Uint32(index), binary.BigEndian.Uint32(begin))
+				fmt.Printf("index: %d; begin: %d\n", binary.BigEndian.Uint32(index), binary.BigEndian.Uint32(begin))
 				data := msg.data[8:]
 				// fmt.Println("Data: ", data)
 				pieceData = append(pieceData, data...)
-				// fmt.Println("Length of downloaded piece data so far: ", len(pieceData))
+				fmt.Println("Length of downloaded piece data so far: ", len(pieceData))
 
 			}
 			// fmt.Println("Total length of downloaded piece data: ", len(pieceData))
@@ -141,12 +141,14 @@ func main() {
 					return
 				}
 				defer file.Close()
-				_, err = file.Write(pieceData)
+				n, err := file.Write(pieceData)
 				if err != nil {
 					fmt.Println(err)
 					return
 				}
+				fmt.Printf("%d bytes written to %s.\n", n, fileDestination)
 				fmt.Printf("Piece %d downloaded to %s.\n", piece, fileDestination)
+				os.Exit(0)
 				break
 			}
 			fmt.Println("Checksum failed, testing fetch data from another peer")

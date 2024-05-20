@@ -147,7 +147,7 @@ func newPeerConnection(peer string, infoHash []byte) PeerConnection {
 	io.ReadFull(conn, answer)
 
 	// Read last 20 bytes (peerID)
-	fmt.Printf("Peer ID: %x\n", answer[48:])
+	// fmt.Printf("Peer ID: %x\n", answer[48:])
 
 	return PeerConnection{
 		conn:     conn,
