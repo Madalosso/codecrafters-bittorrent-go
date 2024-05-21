@@ -102,6 +102,7 @@ func main() {
 				binary.BigEndian.PutUint32(requestPayload[0:], uint32(piece))
 				binary.BigEndian.PutUint32(requestPayload[4:], uint32(i))
 				if i+requestLength <= torrent.PieceLength {
+					fmt.Println("requesting new piece with length: ", requestLength)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(requestLength))
 				} else {
 					fmt.Printf("Last piece, length: %v - %v : %v", torrent.PieceLength, i, torrent.PieceLength-i)
