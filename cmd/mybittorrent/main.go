@@ -127,6 +127,7 @@ func main() {
 						peerConnection.conn.Close()
 						if j+1 < len(peers){
 							j++
+							fmt.Println("Selecting next peer: ", peers[j])
 						} else {
 							fmt.Println("No other peer available, closing...")
 							os.Exit(1)
