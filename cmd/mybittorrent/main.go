@@ -97,8 +97,8 @@ func main() {
 			// fmt.Println("Waiting for request download")
 
 			// Download piece
-			const blockSize int = 3 * 1024
-			// const blockSize int = 16 * 1024
+			// const blockSize int = 3 * 1024
+			const blockSize int = 16 * 1024
 			var pieceData []byte
 			fmt.Printf("Download piece %d with size %d through %d blocks of %d length\n", piece, torrent.PieceLength, torrent.PieceLength/blockSize, blockSize)
 			for i := 0; i < torrent.PieceLength; i += blockSize {
