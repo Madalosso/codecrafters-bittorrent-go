@@ -114,7 +114,13 @@ func main() {
 				//wait for msg id 7 (Piece)
 				// fmt.Println("Waiting for msg with data")
 
-				msg, _ := peerConnection.readMessage(7)
+				msg, error := peerConnection.readMessage(7)
+				if error != nil {
+					fmt.Println("Error reading msg. Trying again")
+					// try again
+					i -= requestLength
+					continue
+				}
 
 				index := make([]byte, 4)
 				begin := make([]byte, 4)
