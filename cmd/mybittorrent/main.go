@@ -107,7 +107,7 @@ func main() {
 				binary.BigEndian.PutUint32(requestPayload[0:], uint32(piece))
 				binary.BigEndian.PutUint32(requestPayload[4:], uint32(i))
 				if i+blockSize <= torrent.PieceLength {
-					fmt.Println("requesting data from ", i," to ",i+blockSize)
+					fmt.Println("requesting data from ", i, " to ", i+blockSize)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(blockSize))
 				} else {
 					fmt.Printf("Last piece, length: %v - %v : %v\n", torrent.PieceLength, i, torrent.PieceLength-i)
@@ -121,15 +121,23 @@ func main() {
 
 				msg, err := peerConnection.readMessage(7)
 				if err != nil {
-					fmt.Println("Error reading msg. Trying again")
 					if err == io.EOF {
-            fmt.Println("Connection was closed? Trying to reconnect and keep downloading")
-
+						fmt.Println("Connection was closed? Trying to reconnect and keep downloading")
 						//try to reconnect?
 						peerConnection.conn.Close()
 						peerConnection = newPeerConnection(peer, torrent.InfoHash[:])
-            // os.Exit(1)
-        }
+
+						// fmt.Println("Waiting for bitfield")
+						peerConnection.readMessage(5)
+
+						var payload []byte
+						// fmt.Println("Sending 'interested'")
+						peerConnection.writeMessage(2, payload)
+
+						// fmt.Println("Waiting for unchoke")
+						peerConnection.readMessage(1)
+						// os.Exit(1)
+					}
 					// try again
 					i -= blockSize
 					continue
@@ -153,7 +161,7 @@ func main() {
 			hash := sha1.Sum(pieceData)
 			// fmt.Println("hashTarget: ", pieceHash)
 			// fmt.Println("Hash from data: ", hash)
-			if check := bytes.Equal(pieceHash[:],hash[:]); check {
+			if check := bytes.Equal(pieceHash[:], hash[:]); check {
 				// fmt.Println("Checksum correct! breaking out of the loop")
 				// write to disk
 				file, err := os.Create(fileDestination)
