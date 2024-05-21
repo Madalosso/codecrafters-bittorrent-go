@@ -73,7 +73,7 @@ func (p *PeerConnection) readMessage(expectedMsgId byte) (PeerMessage, error) {
 		os.Exit(1)
 	}
 	length := binary.BigEndian.Uint32(lengthBuf)
-
+	fmt.Println("msg length: ", length)
 	// Read message ID (1 byte)
 	payload := make([]byte, length)
 	_, err = io.ReadFull(p.conn, payload)
@@ -83,7 +83,7 @@ func (p *PeerConnection) readMessage(expectedMsgId byte) (PeerMessage, error) {
 	}
 	msgId := payload[0]
 
-	// fmt.Println("msgId: ", msgId)
+	fmt.Println("msgId: ", msgId)
 	// fmt.Println("payload: ", payload[1:])
 
 	// If message ID is 5 (bitfield), break the loop
