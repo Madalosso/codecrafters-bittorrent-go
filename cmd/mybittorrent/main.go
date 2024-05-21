@@ -74,8 +74,8 @@ func main() {
 
 		torrent, _ := buildTorrent(torrentFile)
 		peers := peersList(torrent)
-
 		fmt.Println(fileDestination, torrentFile, piece)
+		fmt.Println(torrent.Announce)
 		for _, peer := range peers {
 			if len(peers)>1{
 				continue
