@@ -77,9 +77,9 @@ func main() {
 		fmt.Println(fileDestination, torrentFile, piece)
 		fmt.Println(torrent.Announce)
 		for _, peer := range peers {
-			if len(peers)>1{
-				continue
-			}
+			// if len(peers)>1{
+			// 	continue
+			// }
 			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
 			// defer peerConnection.conn.Close()
