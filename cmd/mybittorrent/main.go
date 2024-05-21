@@ -77,7 +77,9 @@ func main() {
 		peers := peersList(torrent)
 		fmt.Println(fileDestination, torrentFile, piece)
 		fmt.Println(torrent.Announce)
-		for _, peer := range peers {
+		// for _, peer := range peers
+		for j:=0 ; j <len(peers); j++{
+			peer := peers[j]
 			// if len(peers)>1{
 			// 	continue
 			// }
@@ -125,6 +127,11 @@ func main() {
 						fmt.Println("Connection was closed? Trying to reconnect and keep downloading")
 						//try to reconnect?
 						peerConnection.conn.Close()
+						if j+1 <len(peers){
+							j++
+						}
+						peer = peers[j]
+
 						peerConnection = newPeerConnection(peer, torrent.InfoHash[:])
 
 						// fmt.Println("Waiting for bitfield")
