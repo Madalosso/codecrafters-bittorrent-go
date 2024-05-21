@@ -77,6 +77,9 @@ func main() {
 
 		fmt.Println(fileDestination, torrentFile, piece)
 		for _, peer := range peers {
+			if len(peers)>1{
+				continue
+			}
 			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
 			// defer peerConnection.conn.Close()
@@ -92,18 +95,20 @@ func main() {
 			peerConnection.readMessage(1)
 
 			// fmt.Println("Waiting for request download")
-			// break
-			// every 16k
-			const requestLength int = 16 * 1024
+
+			// Download piece
+			// const blockSize int = 7 * 1024
+			const blockSize int = 16 * 1024
 			var pieceData []byte
-			for i := 0; i < torrent.PieceLength; i += requestLength {
+			fmt.Printf("Download piece %d with size %d through %d blocks of %d length\n", piece, torrent.PieceLength, torrent.PieceLength/blockSize, blockSize)
+			for i := 0; i < torrent.PieceLength; i += blockSize {
 				requestPayload := make([]byte, 12) // 4 bytes for piece index, 4 bytes for offset, 4 bytes for length
 
 				binary.BigEndian.PutUint32(requestPayload[0:], uint32(piece))
 				binary.BigEndian.PutUint32(requestPayload[4:], uint32(i))
-				if i+requestLength <= torrent.PieceLength {
-					fmt.Println("requesting data from ", i," to ",i+requestLength)
-					binary.BigEndian.PutUint32(requestPayload[8:], uint32(requestLength))
+				if i+blockSize <= torrent.PieceLength {
+					fmt.Println("requesting data from ", i," to ",i+blockSize)
+					binary.BigEndian.PutUint32(requestPayload[8:], uint32(blockSize))
 				} else {
 					fmt.Printf("Last piece, length: %v - %v : %v", torrent.PieceLength, i, torrent.PieceLength-i)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(torrent.PieceLength-i))
@@ -114,13 +119,13 @@ func main() {
 				//wait for msg id 7 (Piece)
 				// fmt.Println("Waiting for msg with data")
 
-				msg, _ := peerConnection.readMessage(7)
-				// if error != nil {
-				// 	fmt.Println("Error reading msg. Trying again")
-				// 	// try again
-				// 	i -= requestLength
-				// 	continue
-				// }
+				msg, err := peerConnection.readMessage(7)
+				if err != nil {
+					fmt.Println("Error reading msg. Trying again")
+					// try again
+					i -= blockSize
+					continue
+				}
 
 				index := make([]byte, 4)
 				begin := make([]byte, 4)
