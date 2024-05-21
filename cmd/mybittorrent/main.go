@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -122,6 +123,10 @@ func main() {
 				msg, err := peerConnection.readMessage(7)
 				if err != nil {
 					fmt.Println("Error reading msg. Trying again")
+					if err == io.EOF {
+            fmt.Println("Connection was closed")
+            os.Exit(1)
+        }
 					// try again
 					i -= blockSize
 					continue
