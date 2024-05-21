@@ -80,10 +80,7 @@ func main() {
 		// for _, peer := range peers
 		for j:=0 ; j <len(peers); j++{
 			peer := peers[j]
-			// if len(peers)>1{
-			// 	continue
-			// }
-			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
+			fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
 
 			// fmt.Println("Waiting for bitfield")
@@ -102,6 +99,7 @@ func main() {
 			// const blockSize int = 3 * 1024
 			const blockSize int = 16 * 1024
 			var pieceData []byte
+			fmt.Println("Number of peers: ", len(peers))
 			fmt.Printf("Download piece %d with size %d through %d blocks of %d length\n", piece, torrent.PieceLength, torrent.PieceLength/blockSize, blockSize)
 			for i := 0; i < torrent.PieceLength; i += blockSize {
 				requestPayload := make([]byte, 12) // 4 bytes for piece index, 4 bytes for offset, 4 bytes for length
@@ -127,8 +125,11 @@ func main() {
 						fmt.Println("Connection was closed? Trying to reconnect and keep downloading")
 						//try to reconnect?
 						peerConnection.conn.Close()
-						if j+1 <len(peers){
+						if j+1 < len(peers){
 							j++
+						} else {
+							fmt.Println("No other peer available, closing...")
+							os.Exit(1)
 						}
 						peer = peers[j]
 

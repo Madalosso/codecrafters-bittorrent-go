@@ -87,10 +87,6 @@ func (p *PeerConnection) readMessage(expectedMsgId byte) (PeerMessage, error) {
 	}
 	msgId := payload[0]
 
-	fmt.Println("msgId: ", msgId)
-	// fmt.Println("payload: ", payload[1:])
-
-	// If message ID is 5 (bitfield), break the loop
 	if msgId != expectedMsgId {
 		return PeerMessage{}, fmt.Errorf("Unexpected msg id")
 	}
