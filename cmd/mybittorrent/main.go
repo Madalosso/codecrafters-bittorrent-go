@@ -83,7 +83,6 @@ func main() {
 			// }
 			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
-			// defer peerConnection.conn.Close()
 
 			// fmt.Println("Waiting for bitfield")
 			peerConnection.readMessage(5)
@@ -143,6 +142,7 @@ func main() {
 				fmt.Println("Length of downloaded piece data so far: ", len(pieceData), "/", torrent.PieceLength)
 
 			}
+			peerConnection.conn.Close()
 			// fmt.Println("Total length of downloaded piece data: ", len(pieceData))
 
 			pieceHash := torrent.PieceHashes[piece]
