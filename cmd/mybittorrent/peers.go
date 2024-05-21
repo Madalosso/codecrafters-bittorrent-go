@@ -70,7 +70,8 @@ func (p *PeerConnection) readMessage(expectedMsgId byte) (PeerMessage, error) {
 	_, err := io.ReadFull(p.conn, lengthBuf)
 	if err != nil {
 		fmt.Println("Error reading message length:", err)
-		os.Exit(1)
+		return PeerMessage{}, err
+		// os.Exit(1)
 	}
 	length := binary.BigEndian.Uint32(lengthBuf)
 	fmt.Println("msg length: ", length)
