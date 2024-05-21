@@ -67,7 +67,10 @@ type PeerMessage struct {
 func (p *PeerConnection) readMessage(expectedMsgId byte) (PeerMessage, error) {
 	// Read message length (4 bytes)
 	lengthBuf := make([]byte, 4)
-	_, err := io.ReadFull(p.conn, lengthBuf)
+	n, err := io.ReadAtLeast(p.conn, lengthBuf, 4)
+	fmt.Printf("readMessage: Read %d bytes \n", n)
+
+	// _, err := io.ReadFull(p.conn, lengthBuf)
 	if err != nil {
 		fmt.Println("Error reading message length:", err)
 		return PeerMessage{}, err

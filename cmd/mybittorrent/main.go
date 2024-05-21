@@ -79,7 +79,7 @@ func main() {
 		for _, peer := range peers {
 			// fmt.Println("Trying to download piece ", piece, "from peer ", peer)
 			peerConnection := newPeerConnection(peer, torrent.InfoHash[:])
-			defer peerConnection.conn.Close()
+			// defer peerConnection.conn.Close()
 
 			// fmt.Println("Waiting for bitfield")
 			peerConnection.readMessage(5)
@@ -114,13 +114,13 @@ func main() {
 				//wait for msg id 7 (Piece)
 				// fmt.Println("Waiting for msg with data")
 
-				msg, error := peerConnection.readMessage(7)
-				if error != nil {
-					fmt.Println("Error reading msg. Trying again")
-					// try again
-					i -= requestLength
-					continue
-				}
+				msg, _ := peerConnection.readMessage(7)
+				// if error != nil {
+				// 	fmt.Println("Error reading msg. Trying again")
+				// 	// try again
+				// 	i -= requestLength
+				// 	continue
+				// }
 
 				index := make([]byte, 4)
 				begin := make([]byte, 4)
