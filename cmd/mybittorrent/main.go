@@ -97,8 +97,8 @@ func main() {
 			// fmt.Println("Waiting for request download")
 
 			// Download piece
-			// const blockSize int = 7 * 1024
-			const blockSize int = 16 * 1024
+			const blockSize int = 3 * 1024
+			// const blockSize int = 16 * 1024
 			var pieceData []byte
 			fmt.Printf("Download piece %d with size %d through %d blocks of %d length\n", piece, torrent.PieceLength, torrent.PieceLength/blockSize, blockSize)
 			for i := 0; i < torrent.PieceLength; i += blockSize {
@@ -110,7 +110,7 @@ func main() {
 					fmt.Println("requesting data from ", i," to ",i+blockSize)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(blockSize))
 				} else {
-					fmt.Printf("Last piece, length: %v - %v : %v", torrent.PieceLength, i, torrent.PieceLength-i)
+					fmt.Printf("Last piece, length: %v - %v : %v\n", torrent.PieceLength, i, torrent.PieceLength-i)
 					binary.BigEndian.PutUint32(requestPayload[8:], uint32(torrent.PieceLength-i))
 				}
 
@@ -123,8 +123,12 @@ func main() {
 				if err != nil {
 					fmt.Println("Error reading msg. Trying again")
 					if err == io.EOF {
-            fmt.Println("Connection was closed")
-            os.Exit(1)
+            fmt.Println("Connection was closed? Trying to reconnect and keep downloading")
+
+						//try to reconnect?
+						peerConnection.conn.Close()
+						peerConnection = newPeerConnection(peer, torrent.InfoHash[:])
+            // os.Exit(1)
         }
 					// try again
 					i -= blockSize
